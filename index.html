@@ -368,8 +368,11 @@ let html='';
 let total=0;
 
 currentGuest.orders.forEach(order => {
-    const datum = order.time
-        ? new Date(order.time).toLocaleString('de-DE')
+    const uhrzeit = order.time
+        ? new Date(order.time).toLocaleTimeString('de-DE', {
+            hour: '2-digit',
+            minute: '2-digit'
+        })
         : '';
 
     html += `
@@ -377,7 +380,7 @@ currentGuest.orders.forEach(order => {
         <span>
             ${order.name}<br>
             ${order.qty} × ${order.unitPrice.toFixed(2)} €<br>
-            <small>${datum}</small>
+            <small>${uhrzeit}</small>
         </span>
         <b>${order.total.toFixed(2)} €</b>
     </div>
