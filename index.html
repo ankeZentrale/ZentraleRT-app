@@ -63,6 +63,11 @@ border-radius:8px;
 border:1px solid #ccc;
 }
 
+.table-select{
+min-height:52px;
+font-size:18px;
+}
+
 .hidden{
 display:none;
 }
@@ -79,6 +84,7 @@ font-weight:bold;
 color:#1f5c4f;
 margin-top:15px;
 }
+
 #guestCards{
     display:grid;
     grid-template-columns:repeat(auto-fit, minmax(140px, 1fr));
@@ -111,13 +117,13 @@ Bestellungen
 
 <input
 id="cardNumber"
-placeholder="Nummer Gast mit Name angeben">
+placeholder="Kartennummer (z.B. 037)">
 
-<select id="tableNumber"class="table-select">
-.table-select{
-    min-height:52px;
-    font-size:18px;
-}
+<input
+id="guestName"
+placeholder="Name (optional)">
+
+<select id="tableNumber" class="table-select">
 <option>Tisch 1</option>
 <option>Tisch 2</option>
 <option>Tisch 3</option>
@@ -131,7 +137,7 @@ placeholder="Nummer Gast mit Name angeben">
 <option>Tisch 18 Turm unten</option>
 <option>Tisch 19 Turm unten</option>
 <option>Tisch 20 Turm unten</option>
- <option>theke</option>
+<option>theke</option>
 
 </select>
 
@@ -145,7 +151,7 @@ Gast anlegen
 
 <input
 id="searchCard"
-placeholder="Kartennummer suchen..."
+placeholder="Kartennummer oder Name suchen..."
 onkeyup="renderGuests()">
 
 </div>
@@ -266,11 +272,27 @@ JSON.stringify(guests)
 
 }
 
+function escapeHtml(value){
+return String(value ?? '').replace(/[&<>"']/g, character => ({
+    '&':'&amp;',
+    '<':'&lt;',
+    '>':'&gt;',
+    '"':'&quot;',
+    "'":'&#39;'
+})[character]);
+}
+
 function createGuest(){
 
 const card =
 document
 .getElementById('cardNumber')
+.value
+.trim();
+
+const name =
+document
+.getElementById('guestName')
 .value
 .trim();
 
@@ -295,6 +317,7 @@ return;
 
 guests.push({
 card,
+name,
 table,
 orders:[]
 });
@@ -303,6 +326,9 @@ save();
 
 document
 .getElementById('cardNumber')
+.value='';
+document
+.getElementById('guestName')
 .value='';
 
 renderGuests();
@@ -320,7 +346,7 @@ document
 let html='';
  guests
 .filter(g =>
-g.card
+(g.card + ' ' + (g.name || ''))
 .toLowerCase()
 .includes(filter)
 )
@@ -335,11 +361,13 @@ total += o.total;
 html += `
 <div
 class="card guest-card"
-onclick="openGuest('${g.card}')">
+data-card="${escapeHtml(g.card)}"
+onclick="openGuest(this.dataset.card)">
 
-<b>Karte ${g.card}</b><br>
+<b>${escapeHtml(g.card)}</b>
+${g.name ? `<br>${escapeHtml(g.name)}` : ''}<br>
 
-${g.table}<br><br>
+${escapeHtml(g.table)}<br><br>
 
 Offen:
 ${total.toFixed(2)} €
@@ -361,6 +389,8 @@ currentGuest =
 guests.find(
 g => g.card === card
 );
+
+if (!currentGuest) return;
 
 document
 .getElementById('guestList')
@@ -403,10 +433,14 @@ currentGuest.orders.forEach(order => {
     total += order.total;
 });
 
+const guestName = currentGuest.name
+    ? `<br>${escapeHtml(currentGuest.name)}`
+    : '';
+
 document
 .getElementById('guestTitle')
 .innerHTML =
-`Karte ${currentGuest.card}<br>${currentGuest.table}`;
+`Nummer ${escapeHtml(currentGuest.card)}${guestName}<br>${escapeHtml(currentGuest.table)}`;
 
 document
 .getElementById('orderList')
