@@ -335,8 +335,8 @@ let html='';
 
 let total = 0;
 
-g.orders.forEach(o=>{
-total += o.total;
+(g.orders || []).forEach(o=>{
+    total += Number(o.total) || 0;
 });
 
 html += `
@@ -392,7 +392,7 @@ function refreshGuest(){
 let html='';
 let total=0;
 
-currentGuest.orders.forEach(order => {
+(currentGuest.orders || []).forEach(order => {
     const uhrzeit = order.time
         ? new Date(order.time).toLocaleTimeString('de-DE', {
             hour: '2-digit',
