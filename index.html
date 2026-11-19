@@ -1,10 +1,470 @@
 <!DOCTYPE html>
-<html>
+<html lang="de">
 <head>
-    <title>Test</title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+
+<title>Kneipen-App</title>
+
+<style>
+
+*{
+    box-sizing:border-box;
+}
+
+body{
+    margin:0;
+    font-family:Arial,sans-serif;
+    background:#f4f4f4;
+}
+
+header{
+    background:#1f5c4f;
+    color:white;
+    padding:15px;
+    text-align:center;
+    font-size:26px;
+    font-weight:bold;
+}
+
+.container{
+    padding:15px;
+}
+
+.card{
+    background:white;
+    border-radius:10px;
+    padding:15px;
+    margin-bottom:10px;
+    box-shadow:0 2px 5px rgba(0,0,0,.15);
+}
+
+button{
+    width:100%;
+    padding:15px;
+    margin-top:6px;
+    border:none;
+    border-radius:8px;
+    background:#1f5c4f;
+    color:white;
+    font-size:18px;
+    cursor:pointer;
+}
+
+button:hover{
+    background:#17483e;
+}
+
+input,
+select{
+    width:100%;
+    padding:12px;
+    margin-top:5px;
+    margin-bottom:10px;
+    border-radius:8px;
+    border:1px solid #ccc;
+}
+
+.hidden{
+    display:none;
+}
+
+.total{
+    font-size:26px;
+    font-weight:bold;
+    color:#1f5c4f;
+    margin-top:15px;
+}
+
+.order-row{
+    display:flex;
+    justify-content:space-between;
+    margin:5px 0;
+}
+
+.search{
+    margin-bottom:10px;
+}
+
+h2,h3{
+    margin-top:0;
+}
+
+</style>
 </head>
+
 <body>
-    <h1>Hallo Anke!</h1>
-    <p>Meine Kneipen-App läuft über GitHub Pages.</p>
+
+<header>Kneipen-App</header>
+
+<div class="container">
+
+<!-- GÄSTELISTE -->
+
+<div id="guestList">
+
+<div class="card">
+
+<h3>Gast anlegen</h3>
+
+<input id="cardNumber"
+placeholder="Kartennummer z.B. 037">
+
+<select id="tableNumber">
+
+<option>Tisch 1</option>
+<option>Tisch 2</option>
+<option>Tisch 3</option>
+<option>Tisch 4</option>
+<option>Tisch 5</option>
+<option>Tisch 6</option>
+<option>Tisch 7</option>
+<option>Tisch 8</option>
+<option>Tisch 9</option>
+<option>Tisch 10</option>
+<option>Tisch 11</option>
+<option>Tisch 12</option>
+<option>Theke</option>
+
+</select>
+
+<button onclick="createGuest()">
+Gast anlegen
+</button>
+
+</div>
+
+<div class="card">
+
+<input
+id="searchCard"
+class="search"
+placeholder="Kartennummer suchen..."
+onkeyup="renderGuests()">
+
+</div>
+
+<h2>Offene Gäste</h2>
+
+<div id="guestCards"></div>
+
+</div>
+
+<!-- GASTANSICHT -->
+
+<div id="guestView" class="hidden">
+
+<div class="card">
+
+<h2 id="guestTitle"></h2>
+
+<div id="orderList"></div>
+
+<div class="total"
+id="guestTotal">
+0,00 €
+</div>
+
+</div>
+
+<button onclick="addOrder('Bier',4.20)">
+🍺 Bier 4,20 €
+</button>
+
+<button onclick="addOrder('Weizen',4.80)">
+🍺 Weizen 4,80 €
+</button>
+
+<button onclick="addOrder('Cola',3.50)">
+🥤 Cola 3,50 €
+</button>
+
+<button onclick="addOrder('Wasser',3.00)">
+💧 Wasser 3,00 €
+</button>
+
+<button onclick="addOrder('Wurstsalat',9.50)">
+🥗 Wurstsalat 9,50 €
+</button>
+
+<button style="background:#1976d2;"
+onclick="payGuest()">
+💰 Gast abrechnen
+</button>
+
+<button style="background:#666;"
+onclick="back()">
+⬅ Zurück
+</button>
+
+</div>
+
+</div>
+
+<script>
+
+let guests =
+JSON.parse(
+localStorage.getItem("guests")
+) || [];
+
+let currentGuest = null;
+
+function save(){
+
+    localStorage.setItem(
+        "guests",
+        JSON.stringify(guests)
+    );
+
+}
+
+function createGuest(){
+
+    const card =
+    document
+    .getElementById("cardNumber")
+    .value
+    .trim();
+
+    const table =
+    document
+    .getElementById("tableNumber")
+    .value;
+
+    if(card===""){
+        alert("Kartennummer eingeben");
+        return;
+    }
+
+    if(
+        guests.find(
+            g=>g.card===card
+        )
+    ){
+        alert("Karte bereits aktiv");
+        return;
+    }
+
+    guests.push({
+        card,
+        table,
+        orders:[]
+    });
+
+    save();
+
+    document
+    .getElementById("cardNumber")
+    .value="";
+
+    renderGuests();
+
+}
+
+function renderGuests(){
+
+    const filter =
+    document
+    .getElementById("searchCard")
+    ?.value
+    ?.toLowerCase() || "";
+
+    let html="";
+
+    guests
+    .filter(g =>
+        g.card
+        .toLowerCase()
+        .includes(filter)
+    )
+    .forEach(g=>{
+
+        let total = 0;
+
+        g.orders.forEach(o=>{
+            total += o.total;
+        });
+
+        html += `
+        <div class="card"
+        onclick="openGuest('${g.card}')">
+
+        <strong>
+        Karte ${g.card}
+        </strong>
+
+        <br>
+
+        ${g.table}
+
+        <br><br>
+
+        Offen:
+        <strong>
+        ${total.toFixed(2)} €
+        </strong>
+
+        </div>
+        `;
+    });
+
+    document
+    .getElementById("guestCards")
+    .innerHTML = html;
+}
+
+function openGuest(card){
+
+    currentGuest =
+    guests.find(
+        g=>g.card===card
+    );
+
+    document
+    .getElementById("guestList")
+    .classList
+    .add("hidden");
+
+    document
+    .getElementById("guestView")
+    .classList
+    .remove("hidden");
+
+    refreshGuest();
+}
+
+function refreshGuest(){
+
+    let html="";
+    let total=0;
+
+    currentGuest.orders.forEach(order=>{
+
+        html += `
+        <div class="order-row">
+
+            <span>
+                ${order.name}
+                <br>
+                ${order.qty}
+                ×
+                ${order.unitPrice.toFixed(2)} €
+            </span>
+
+            <strong>
+                ${order.total.toFixed(2)} €
+            </strong>
+
+        </div>
+        `;
+
+        total += order.total;
+
+    });
+
+    document
+    .getElementById("guestTitle")
+    .innerHTML = `
+        Karte ${currentGuest.card}
+        <br>
+        ${currentGuest.table}
+    `;
+
+    document
+    .getElementById("orderList")
+    .innerHTML = html;
+
+    document
+    .getElementById("guestTotal")
+    .innerHTML =
+    `Gesamt: ${total.toFixed(2)} €`;
+
+}
+
+function addOrder(name,price){
+
+    let qty =
+    prompt(
+        "Menge eingeben",
+        "1"
+    );
+
+    if(qty === null)
+        return;
+
+    qty = parseInt(qty);
+
+    if(
+        isNaN(qty) ||
+        qty < 1
+    ){
+        alert(
+            "Ungültige Menge"
+        );
+        return;
+    }
+
+    currentGuest.orders.push({
+
+        name:name,
+
+        qty:qty,
+
+        unitPrice:price,
+
+        total:
+        qty * price
+
+    });
+
+    save();
+
+    refreshGuest();
+
+}
+
+function payGuest(){
+
+    if(
+    !confirm(
+        "Gast abrechnen?"
+    )){
+        return;
+    }
+
+    guests =
+    guests.filter(
+        g =>
+        g.card !==
+        currentGuest.card
+    );
+
+    save();
+
+    back();
+
+}
+
+function back(){
+
+    document
+    .getElementById("guestView")
+    .classList
+    .add("hidden");
+
+    document
+    .getElementById("guestList")
+    .classList
+    .remove("hidden");
+
+    renderGuests();
+
+}
+
+renderGuests();
+
+</script>
+
 </body>
 </html>
