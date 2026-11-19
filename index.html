@@ -79,7 +79,18 @@ font-weight:bold;
 color:#1f5c4f;
 margin-top:15px;
 }
+#guestCards{
+    display:grid;
+    grid-template-columns:repeat(auto-fit, minmax(140px, 1fr));
+    gap:10px;
+}
 
+.guest-card{
+    margin-bottom:0;
+    padding:10px;
+    font-size:14px;
+    cursor:pointer;
+}
 </style>
 
 </head>
@@ -87,7 +98,7 @@ margin-top:15px;
 <body>
 
 <header>
-Kneipen-App
+Bestellungen
 </header>
 
 <div class="container">
@@ -320,7 +331,7 @@ total += o.total;
 
 html += `
 <div
-class="card"
+class="card guest-card"
 onclick="openGuest('${g.card}')">
 
 <b>Karte ${g.card}</b><br>
