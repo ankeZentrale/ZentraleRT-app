@@ -278,57 +278,42 @@ return String(value ?? '').replace(/[&<>"']/g, character => ({
 })[character]);
 }
 
-function createGuest(){
+function createGuest() {
 
-const card =
-document
-.getElementById('cardNumber')
-.value
-.trim();
+    const input =
+        document
+        .getElementById('guestInfo')
+        .value
+        .trim();
 
-const name =
-document
-.getElementById('guestName')
-.value
-.trim();
+    if (input === '') {
+        alert('Nummer eingeben');
+        return;
+    }
 
-const table =
-document
-.getElementById('tableNumber')
-.value;
+    const parts = input.split(/\s+/);
+    const card = parts.shift();
+    const name = parts.join(' ');
+    const table =
+        document
+        .getElementById('tableNumber')
+        .value;
 
-if(card === ''){
-alert('Kartennummer eingeben');
-return;
-}
+    if (guests.find(g => g.card === card)) {
+        alert('Karte bereits aktiv');
+        return;
+    }
 
-if(
-guests.find(
-g => g.card === card
-)
-){
-alert('Karte bereits aktiv');
-return;
-}
+    guests.push({
+        card,
+        name,
+        table,
+        orders: []
+    });
 
-guests.push({
-card,
-name,
-table,
-orders:[]
-});
-
-save();
-
-document
-.getElementById('cardNumber')
-.value='';
-document
-.getElementById('guestName')
-.value='';
-
-renderGuests();
-
+    save();
+    document.getElementById('guestInfo').value = '';
+    renderGuests();
 }
 
 function renderGuests(){
