@@ -109,14 +109,15 @@ placeholder="Kartennummer (z.B. 037)">
 <option>Tisch 3</option>
 <option>Tisch 4</option>
 <option>Tisch 5</option>
-<option>Tisch 6</option>
-<option>Tisch 7</option>
-<option>Tisch 8</option>
-<option>Tisch 9</option>
-<option>Tisch 10</option>
-<option>Tisch 11</option>
-<option>Tisch 12</option>
-<option>Theke</option>
+<option>Tisch 6 Sofa</option>
+<option>Tisch 7 Ecktheke</option>
+<option>Tisch 8 Turm oben</option>
+<option>Tisch 9 Turm oben</option>
+<option>Tisch 10 Turm oben</option>
+<option>Tisch 18 Turm unten</option>
+<option>Tisch 19 Turm unten</option>
+<option>Tisch 20 Turm unten</option>
+ <option>theke</option>
 
 </select>
 
@@ -366,27 +367,23 @@ function refreshGuest(){
 let html='';
 let total=0;
 
-currentGuest.orders.forEach(order=>{
+currentGuest.orders.forEach(order => {
+    const datum = order.time
+        ? new Date(order.time).toLocaleString('de-DE')
+        : '';
 
-html += `
-<div class="order-row">
+    html += `
+    <div class="order-row">
+        <span>
+            ${order.name}<br>
+            ${order.qty} × ${order.unitPrice.toFixed(2)} €<br>
+            <small>${datum}</small>
+        </span>
+        <b>${order.total.toFixed(2)} €</b>
+    </div>
+    `;
 
-<span>
-${order.name}<br>
-${order.qty}
-x
-${order.unitPrice.toFixed(2)} €
-</span>
-
-<b>
-${order.total.toFixed(2)} €
-</b>
-
-</div>
-`;
-
-total += order.total;
-
+    total += order.total;
 });
 
 document
@@ -408,47 +405,28 @@ total.toFixed(2) +
 
 }
 
-function addOrder(name,price){
+function addOrder(name, price) {
+    let qty = prompt('Menge', '1');
 
-let qty =
-prompt(
-'Menge',
-'1'
-);
+    if (qty === null) return;
 
-if(qty === null)
-return;
+    qty = parseInt(qty);
 
-qty =
-parseInt(qty);
+    if (isNaN(qty) || qty < 1) {
+        alert('Ungültige Menge');
+        return;
+    }
 
-if(
-isNaN(qty)
-||
-qty < 1
-){
-alert('Ungültige Menge');
-return;
-}
+    currentGuest.orders.push({
+        name: name,
+        qty: qty,
+        unitPrice: price,
+        total: qty * price,
+        time: new Date().toISOString()
+    });
 
-currentGuest.orders.push({
-
-name:name,
-
-qty:qty,
-
-unitPrice:price,
-
-total:
-qty * price
- 
-<td>${order.time}</td>
-});
-
-save();
-
-refreshGuest();
-
+    save();
+    refreshGuest();
 }
 
 function payGuest(){
