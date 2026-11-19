@@ -56,66 +56,253 @@ font-size:16px;
 
 input,
 select{
-width:
- <!DOCTYPE html>
-<html lang="de">
-
-<head>
-
-<meta charset="UTF-8">
-
-<meta name="viewport"
-content="width=device-width, initial-scale=1">
-
-<title>Kneipen-App</title>
-
-<style>
-
-*{
-box-sizing:border-box;
-}
-
-body{
-margin:0;
-font-family:Arial,sans-serif;
-background:#f4f4f4;
-}
-
-header{
-background:#1f5c4f;
-color:white;
-padding:15px;
-text-align:center;
-font-size:26px;
-font-weight:bold;
-}
-
-.container{
-padding:15px;
-}
-
-.card{
-background:white;
-padding:15px;
-margin-bottom:10px;
-border-radius:10px;
-box-shadow:0 2px 5px rgba(0,0,0,.15);
-}
-
-button{
 width:100%;
-padding:14px;
-margin-top:6px;
-border:none;
+padding:12px;
+margin:5px 0 10px;
 border-radius:8px;
-background:#1f5c4f;
-color:white;
-font-size:16px;
+border:1px solid #ccc;
 }
 
-input,
-select{
-width:
+.hidden{
+display:none;
+}
+
+.order-row{
+display:flex;
+justify-content:space-between;
+margin:5px 0;
+}
+
+.total{
+font-size:24px;
+font-weight:bold;
+color:#1f5c4f;
+margin-top:15px;
+}
+
+</style>
+
+</head>
+
+<body>
+
+<header>
+Kneipen-App
+</header>
+
+<div class="container">
+
+<div id="guestList">
+
+<div class="card">
+
+<h3>Gast anlegen</h3>
+
+<input
+id="cardNumber"
+placeholder="Kartennummer (z.B. 037)">
+
+<select id="tableNumber">
+
+<option>Tisch 1</option>
+<option>Tisch 2</option>
+<option>Tisch 3</option>
+<option>Tisch 4</option>
+<option>Tisch 5</option>
+<option>Tisch 6</option>
+<option>Tisch 7</option>
+<option>Tisch 8</option>
+<option>Tisch 9</option>
+<option>Tisch 10</option>
+<option>Tisch 11</option>
+<option>Tisch 12</option>
+<option>Theke</option>
+
+</select>
+
+<button onclick="createGuest()">
+Gast anlegen
+</button>
+
+</div>
+
+<div class="card">
+
+<input
+id="searchCard"
+placeholder="Kartennummer suchen..."
+onkeyup="renderGuests()">
+
+</div>
+
+<h2>Offene Gäste</h2>
+
+<div id="guestCards"></div>
+
+</div>
+
+<div
+id="guestView"
+class="hidden">
+
+<div class="card">
+
+<h2 id="guestTitle"></h2>
+
+<div id="orderList"></div>
+
+<div
+class="total"
+id="guestTotal">
+</div>
+
+</div>
+<h3>🍺 Getränke</h3>
+
+<button onclick="addOrder('Bier',4.90)">
+🍺 August 4,90 €
+</button>
+
+<button onclick="addOrder('Weizen',4.90)">
+🍺 Schussen 4,90 €
+</button>
+
+<button onclick="addOrder('Radler',4.90)">
+🍺 Radler 4,90 €
+</button>
+
+<button onclick="addOrder('Cola/Fanta/Spezi',4.50)">
+🥤 Cola/Fanta/Spezi 4,50 €
+</button>
+
+<button onclick="addOrder('Weizen',4.90)">
+🥤 Weizen 4,90 €
+</button>
+
+<button onclick="addOrder('Wasser groß',3.50)">
+💧 Wasser groß 3,50 €
+</button>
+
+<button onclick="addOrder('Weinschorle',4.90)">
+🍷 Weinschorle 4,50 €
+</button>
+
+<h3>🍽️ Speisen</h3>
+
+<button onclick="addOrder('Currywurst',5.00)">
+Currywurst 5,00 €
+</button>
+
+<button onclick="addOrder('Wurstsalat',9.50)">
+🥗 Wurstsalat 9,50 €
+</button>
+
+<button onclick="addOrder('Schweizer Wurstsalat',10.50)">
+🥗 Schweizer Wurstsalat 10,50 €
+</button>
+
+<button onclick="addOrder('Flammkuchen',11.90)">
+🍕 Flammkuchen 11,90 €
+</button>
+
+<button onclick="addOrder('Pommes',4.50)">
+🍟 Pommes 4,50 €
+</button>
+
+<button onclick="addOrder('Schnitzel',14.90)">
+🥩 Schnitzel 14,90 €
+</button>
+
+<button
+style="background:#1976d2"
+onclick="payGuest()">
+
+💰 Gast abrechnen
+
+</button>
+
+<button
+style="background:#666"
+onclick="back()">
+
+⬅ Zurück
+
+</button>
+
+</div>
+
+</div>
+
+<script>
+
+let guests =
+JSON.parse(
+localStorage.getItem('guests')
+) || [];
+
+let currentGuest = null;
+
+function save(){
+
+localStorage.setItem(
+'guests',
+JSON.stringify(guests)
+);
+
+}
+
+function createGuest(){
+
+const card =
+document
+.getElementById('cardNumber')
+.value
+.trim();
+
+const table =
+document
+.getElementById('tableNumber')
+.value;
+
+if(card === ''){
+alert('Kartennummer eingeben');
+return;
+}
+
+if(
+guests.find(
+g => g.card === card
+)
+){
+alert('Karte bereits aktiv');
+return;
+}
+
+guests.push({
+card,
+table,
+orders:[]
+});
+
+save();
+
+document
+.getElementById('cardNumber')
+.value='';
+
+renderGuests();
+
+}
+
+function renderGuests(){
+
+const filter =
+document
+.getElementById('searchCard')
+.value
+.toLowerCase();
+
+let html='';
  guests
 .filter(g =>
 g.card
@@ -307,4 +494,4 @@ renderGuests();
 </script>
 
 </body>
-</html>   
+</html>
