@@ -345,13 +345,9 @@ class="card guest-card"
 data-card="${escapeHtml(g.card)}"
 onclick="openGuest(this.dataset.card)">
 
-<b>${escapeHtml(g.card)}
-${g.name ? `<br>${escapeHtml(g.name)}` : ''}<br>
-
+<b>${escapeHtml(g.card)}${g.name ? ` ${escapeHtml(g.name)}` : ''}<br>
 ${escapeHtml(g.table)}<br><br>
-
-Offen:
-${total.toFixed(2)} €
+Offen: ${total.toFixed(2)} €
 
 </div>
 `;
@@ -415,14 +411,13 @@ let total=0;
 });
 
 const guestName = currentGuest.name
-    ? `<br>${escapeHtml(currentGuest.name)}`
+    ? ` ${escapeHtml(currentGuest.name)}`
     : '';
 
 document
 .getElementById('guestTitle')
 .innerHTML =
-`Nummer ${escapeHtml(currentGuest.card)}${guestName}<br>${escapeHtml(currentGuest.table)}`;
-
+`${escapeHtml(currentGuest.card)}${guestName}<br>${escapeHtml(currentGuest.table)}`;
 document
 .getElementById('orderList')
 .innerHTML =
